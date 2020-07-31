@@ -206,7 +206,7 @@
   var hyphenate = cached(function (str) {
     return str.replace(hyphenateRE, '-$1').toLowerCase()
   });
-  console.log(hyphenate('abCd')); //ab-cd
+  // console.log(hyphenate('abCd')); //ab-cd
 
   /**
    * Simple bind polyfill for environments that do not support it,
@@ -242,30 +242,34 @@
   /**
    * Convert an Array-like object to a real Array.
    */
-  function toArray(list, start) {
-    start = start || 0;
-    var i = list.length - start;
-    var ret = new Array(i);
-    while (i--) {
+  function toArray(list, start) { //把一个伪数组转成真数组
+    start = start || 0; //start就是从哪里开始转数组
+    var i = list.length - start;  //i就是截取的数组长度
+    var ret = new Array(i); //定义一个长度为i的空数组，并把这个空数组给ret
+    while (i--) { //遍历数组，一个个地给数组增加值
       ret[i] = list[i + start];
     }
     return ret
   }
+  // console.log(toArray({0: 11, 1: 22, 2: 33, length: 3}, 0));  //[11, 22, 33]
+  // console.log(toArray({0: 11, 1: 22, 2: 33, length: 3}, 1));  //[22, 33]
 
   /**
    * Mix properties into target object.
    */
-  function extend(to, _from) {
+  function extend(to, _from) {  //合并对象属性，类似于es6的Object.assign或者jQuery的$.extend
     for (var key in _from) {
       to[key] = _from[key];
     }
     return to
   }
+  // let result = extend({b : 2}, {a : 1});
+  // console.log(result);  //{b: 2, a: 1}
 
   /**
    * Merge an Array of Objects into a single Object.
    */
-  function toObject(arr) {
+  function toObject(arr) {  //把数组转成对象
     var res = {};
     for (var i = 0; i < arr.length; i++) {
       if (arr[i]) {
@@ -274,6 +278,7 @@
     }
     return res
   }
+  // console.log(toObject([{name : 'liuyeqing', age : 25}, {gender : 'man'}]));  //{name: "liuyeqing", age: 25, gender: "man"}
 
   /* eslint-disable no-unused-vars */
 
@@ -288,7 +293,7 @@
   /**
    * Always return false.
    */
-  var no = function (a, b, c) {
+  var no = function (a, b, c) { //只返回false的函数
     return false;
   };
 
@@ -297,7 +302,7 @@
   /**
    * Return the same value.
    */
-  var identity = function (_) {
+  var identity = function (_) { //传入什么，原样返回
     return _;
   };
 
@@ -315,6 +320,9 @@
    * if they are plain objects, do they have the same shape?
    */
   function looseEqual(a, b) {
+    /*
+    检查是否两个值松散地、不精确地相等。两个值进行===比较时，如果返回true，说明这两个值相等。否则递归调用当前函数来遍历数据的属性名、属性值、长度来判断两个值是否相等
+    * */
     if (a === b) {
       return true
     }
@@ -356,7 +364,7 @@
    * found in the array (if value is a plain object, the array must
    * contain an object of the same shape), or -1 if it is not present.
    */
-  function looseIndexOf(arr, val) {
+  function looseIndexOf(arr, val) { //传入一个数组、一个值，判断这个值在数组里的索引，如果没有，就返回-1
     for (var i = 0; i < arr.length; i++) {
       if (looseEqual(arr[i], val)) {
         return i
@@ -364,11 +372,14 @@
     }
     return -1
   }
+  // console.log(looseIndexOf([11, 22, 33], 11));  //0
+  // console.log(looseIndexOf([11, 22, 33], 22));  //1
+  // console.log(looseIndexOf([11, 22, 33], 222));  //-1
 
   /**
    * Ensure a function is called only once.
    */
-  function once(fn) {
+  function once(fn) { //确保传入的fn只执行1次
     var called = false;
     return function () {
       if (!called) {
@@ -377,6 +388,11 @@
       }
     }
   }
+  // let canOnlyFireOnce = once(function() {
+  //   console.log('Fired!');
+  // });
+  // canOnlyFireOnce();  //打印‘Fired!’
+  // canOnlyFireOnce();  //这里没反应
 
   var SSR_ATTR = 'data-server-rendered';
 
@@ -386,7 +402,7 @@
     'filter'
   ];
 
-  var LIFECYCLE_HOOKS = [
+  var LIFECYCLE_HOOKS = [   //生命周期
     'beforeCreate',
     'created',
     'beforeMount',
@@ -406,33 +422,33 @@
 
   var config = ({
     /**
-     * Option merge strategies (used in core/util/options)
+     * Option merge strategies (used in core/util/options)  //option合并策略（被用在core/util/options【备注：就是node_modules\_vue@2.6.11@vue\src\core\util\options.js】）
      */
     // $flow-disable-line
     optionMergeStrategies: Object.create(null),
 
     /**
-     * Whether to suppress warnings.
+     * Whether to suppress warnings.  //是否禁止显示警告。silent默认值为false，silent为true时，不显示任何警告
      */
     silent: false,
 
     /**
-     * Show production mode tip message on boot?
+     * Show production mode tip message on boot?  //启动时显示生产模式提示消息？
      */
     productionTip: "development" !== 'production',
 
     /**
-     * Whether to enable devtools
+     * Whether to enable devtools //是否启用devtools
      */
     devtools: "development" !== 'production',
 
     /**
-     * Whether to record perf
+     * Whether to record perf //是否记录性能，原理：chrome浏览器自带的window.performance
      */
     performance: false,
 
     /**
-     * Error handler for watcher errors
+     * Error handler for watcher errors //对错误的捕获和处理
      */
     errorHandler: null,
 
@@ -442,12 +458,12 @@
     warnHandler: null,
 
     /**
-     * Ignore certain custom elements
+     * Ignore certain custom elements //忽略某些自定义元素
      */
     ignoredElements: [],
 
     /**
-     * Custom user key aliases for v-on
+     * Custom user key aliases for v-on   //用v-on时，给key设置自定义别名
      */
     // $flow-disable-line
     keyCodes: Object.create(null),
@@ -455,45 +471,55 @@
     /**
      * Check if a tag is reserved so that it cannot be registered as a
      * component. This is platform-dependent and may be overwritten.
+     * 检查是否已过标签是被保留的，以便它不能被注册作为一个组件。这是依赖平台的，并且可能被覆盖
      */
     isReservedTag: no,
 
     /**
      * Check if an attribute is reserved so that it cannot be used as a component
      * prop. This is platform-dependent and may be overwritten.
+     * 检查是否一个属性被保留，以便它不能被用作一个组件的prop。这是依赖平台的，并且可能被覆盖
      */
     isReservedAttr: no,
 
     /**
      * Check if a tag is an unknown element.
      * Platform-dependent.
+     * 检查是否一个标签是一个未知元素。依赖平台。
      */
     isUnknownElement: no,
+    // console.log(Vue.config.isUnknownElement('abc'));  //true
+    // console.log(Vue.config.isUnknownElement('a'));  //false
 
     /**
      * Get the namespace of an element
+     * 得到一个元素的命名空间
      */
     getTagNamespace: noop,
 
     /**
      * Parse the real tag name for the specific platform.
+     * 给特定的平台解析真实标签名
      */
     parsePlatformTagName: identity,
 
     /**
      * Check if an attribute must be bound using property, e.g. value
      * Platform-dependent.
+     * 检查是否一个熟悉必须用熟悉来绑定，比如value。依赖平台。
      */
     mustUseProp: no,
 
     /**
      * Perform updates asynchronously. Intended to be used by Vue Test Utils
      * This will significantly reduce performance if set to false.
+     * 表现异步更新。计划通过Vue测试工具来使用。如果设置为false，将明显地降低性能。（就是说：同步的话性能会降低）
      */
     async: true,
 
     /**
      * Exposed for legacy reasons
+     * 因遗留的原因而暴露出去（可能是为了兼容旧版本的vue）
      */
     _lifecycleHooks: LIFECYCLE_HOOKS
   });
@@ -502,6 +528,7 @@
 
   /**
    * unicode letters used for parsing html tags, component names and property paths.
+   * unicode自负被用来解析html标签，组件名和属性路径。
    * using https://www.w3.org/TR/html53/semantics-scripting.html#potentialcustomelementname
    * skipping \u10000-\uEFFFF due to it freezing up PhantomJS
    */
@@ -509,6 +536,7 @@
 
   /**
    * Check if a string starts with $ or _
+   * 检测是否一个字符串以'$'或者'_'开头
    */
   function isReserved(str) {
     var c = (str + '').charCodeAt(0);
@@ -516,7 +544,8 @@
   }
 
   /**
-   * Define a property.
+   * Define a property. //定义一个熟悉
+   * enumerable：可枚举
    */
   function def(obj, key, val, enumerable) {
     Object.defineProperty(obj, key, {
@@ -552,10 +581,10 @@
   // can we use __proto__?
   var hasProto = '__proto__' in {};
 
-  // Browser environment sniffing
-  var inBrowser = typeof window !== 'undefined';
-  var inWeex = typeof WXEnvironment !== 'undefined' && !!WXEnvironment.platform;
-  var weexPlatform = inWeex && WXEnvironment.platform.toLowerCase();
+  // Browser environment sniffing //检测浏览器环境
+  var inBrowser = typeof window !== 'undefined';  //如果有window，说明在浏览器里；否则说明在node或者其他环境里
+  var inWeex = typeof WXEnvironment !== 'undefined' && !!WXEnvironment.platform;  //判断运行环境是不是微信，经过测试，在chrome和微信pc端、微信手机端都返回false
+  var weexPlatform = inWeex && WXEnvironment.platform.toLowerCase();  //判断运行环境是不是微信，经过测试，在chrome和微信pc端、微信手机端都返回false
   var UA = inBrowser && window.navigator.userAgent.toLowerCase();
   var isIE = UA && /msie|trident/.test(UA);
   var isIE9 = UA && UA.indexOf('msie 9.0') > 0;
@@ -579,7 +608,7 @@
           supportsPassive = true;
         }
       })); // https://github.com/facebook/flow/issues/285
-      window.addEventListener('test-passive', null, opts);
+      window.addEventListener('test-passive', null, opts);  //window.addEventListener的第三个参数可以传入一个对象{passive:true/false}，表示是否让阻止默认行为(preventDefault()) 失效
     } catch (e) {
     }
   }
@@ -587,7 +616,7 @@
   // this needs to be lazy-evaled because vue may be required before
   // vue-server-renderer can set VUE_ENV
   var _isServer;
-  var isServerRendering = function () {
+  var isServerRendering = function () { //判断是否是服务端渲染
     if (_isServer === undefined) {
       /* istanbul ignore if */
       if (!inBrowser && !inWeex && typeof global !== 'undefined') {
@@ -603,9 +632,17 @@
 
   // detect devtools
   var devtools = inBrowser && window.__VUE_DEVTOOLS_GLOBAL_HOOK__;
+  // console.log('devtools', devtools);  //如果浏览器安装了vue开发插件，会返回一个对象，这个对象里有Vue、emit、off、on、once这些方法；如果浏览器没装vue插件，就返回undefined
 
   /* istanbul ignore next */
   function isNative(Ctor) {
+    // console.log('Ctor.toString()', Ctor.toString());  //比如Symbol.toString()返回'function Symbol() { [native code] }'
+    // console.log('/native code/.test(Ctor.toString()', /native code/.test(Ctor.toString()));
+    /*
+    判断传入的Ctor是否是浏览器原生支持的，判断依据是：
+    1.先判断传入的数据是不是函数
+    2.判断函数转成字符串后是否包含'native code'，比如Symbol.toString()返回'function Symbol() { [native code] }'，其中就有'native code'
+    * */
     return typeof Ctor === 'function' && /native code/.test(Ctor.toString())
   }
 
@@ -613,13 +650,13 @@
     typeof Symbol !== 'undefined' && isNative(Symbol) &&
     typeof Reflect !== 'undefined' && isNative(Reflect.ownKeys);
 
-  var _Set;
+  var _Set; //判断浏览器是否支持Set，如果支持Set，就用浏览器原生的Set；如果不支持Set，就自己模拟一个Set
   /* istanbul ignore if */ // $flow-disable-line
   if (typeof Set !== 'undefined' && isNative(Set)) {
     // use native Set when available.
     _Set = Set;
   } else {
-    // a non-standard Set polyfill that only works with primitive keys.
+    // a non-standard Set polyfill that only works with primitive keys. //用原始的方法来创建一个无标准的Set兼容
     _Set = /*@__PURE__*/(function () {
       function Set() {
         this.set = Object.create(null);
@@ -674,10 +711,46 @@
       }
     };
 
+
+    /*
+    关于下面这段代码，写了一个demo：
+    <div id="app">
+      <div>{{msg}}</div>
+      <my-com></my-com>
+    </div>
+    <script>
+      Vue.component('my-com', {
+        template : `
+          <div>我是自定义组件</div>
+        `
+      });
+      new Vue({
+        el : '#app',
+        data(){
+          return {
+            msg : 'abc'
+          }
+        }
+      });
+    </script>
+    生成的组件树如下：
+    <Root>
+      <MyCom>
+      </MyCom>
+    </Root>
+    * */
     formatComponentName = function (vm, includeFile) {
-      if (vm.$root === vm) {
+      if (vm.$root === vm) {  //每个虚拟DOM都有一个$root属性，如果这个虚拟DOM的$root等于它自己，说明这个虚拟DOM就是根节点
         return '<Root>'
       }
+
+      /*
+      上面示例中：
+      console.log(app.cid); //undefined，根组件没有cid，当vm.cid != null时，说明不是根节点，可以把cid理解为'component-id'、子组件的id
+      console.log(myCom.cid); //1，子组件有cid
+      console.log(app.options); //undefined
+      console.log(myCom.options); //{components : {my-com : f},directives : {},filters : {},name : 'my-com', template : "<div>我是自定义组件</div>",_Ctor:{0 : function(){cid,options}},_base:function Vue(){}}
+      * */
       var options = typeof vm === 'function' && vm.cid != null
         ? vm.options
         : vm._isVue
@@ -690,12 +763,17 @@
         name = match && match[1];
       }
 
+      // 下面返回的是子组件
       return (
         (name ? ("<" + (classify(name)) + ">") : "<Anonymous>") +
         (file && includeFile !== false ? (" at " + file) : '')
       )
     };
 
+    /*
+    对字符串进行重复
+    console.log(repeat('abc', 2));  //abcabc
+    * */
     var repeat = function (str, n) {
       var res = '';
       while (n) {
@@ -710,10 +788,11 @@
       return res
     };
 
+    // 生成组件跟踪
     generateComponentTrace = function (vm) {
       if (vm._isVue && vm.$parent) {
         var tree = [];
-        var currentRecursiveSequence = 0;
+        var currentRecursiveSequence = 0; //currentRecursiveSequence：当前递归序列
         while (vm) {
           if (tree.length > 0) {
             var last = tree[tree.length - 1];
@@ -749,20 +828,28 @@
   /**
    * A dep is an observable that can have multiple
    * directives subscribing to it.
+   * 一个dep是可以有多个指令订阅的可观察对象。
    */
   var Dep = function Dep() {
     this.id = uid++;
     this.subs = [];
   };
 
+  // 给Dep增加订阅，并把值放到subs里
   Dep.prototype.addSub = function addSub(sub) {
     this.subs.push(sub);
   };
 
+  // 给Dep删除订阅
   Dep.prototype.removeSub = function removeSub(sub) {
-    remove(this.subs, sub);
+    remove(this.subs, sub); //function remove(arr, item){}从arr里删除item
   };
 
+  /*
+  设置某个Watcher的依赖
+  这里添加了Dep.target是否存在的判断，目的是判断是不是Watcher的构造函数调用
+  也就是说判断他是Watcher的this.get调用的，而不是普通调用
+  * */
   Dep.prototype.depend = function depend() {
     if (Dep.target) {
       Dep.target.addDep(this);
@@ -770,7 +857,7 @@
   };
 
   Dep.prototype.notify = function notify() {
-    // stabilize the subscriber list first
+    // stabilize the subscriber list first  //首先稳定订阅者列表
     var subs = this.subs.slice();
     if (!config.async) {
       // subs aren't sorted in scheduler if not running async
@@ -780,6 +867,7 @@
         return a.id - b.id;
       });
     }
+    //通知所有绑定 Watcher。调用watcher的update()
     for (var i = 0, l = subs.length; i < l; i++) {
       subs[i].update();
     }
@@ -802,7 +890,18 @@
   }
 
   /*  */
-
+  /*
+  虚拟DOM的样子就是这样：
+  {
+    tag : '',
+    data : {},
+    children : [{}, {}],
+    text : '',
+    elm : '',
+    context : '',
+    componentOptions : {},
+    asyncFactory : function(){}
+  * */
   var VNode = function VNode(
     tag,
     data,
@@ -840,7 +939,7 @@
 
   var prototypeAccessors = {child: {configurable: true}};
 
-  // DEPRECATED: alias for componentInstance for backwards compat.
+  // DEPRECATED: alias for componentInstance for backwards compat.  //废弃的：给组件实例向后兼容的别名
   /* istanbul ignore next */
   prototypeAccessors.child.get = function () {
     return this.componentInstance
@@ -848,6 +947,7 @@
 
   Object.defineProperties(VNode.prototype, prototypeAccessors);
 
+  // 创建空的虚拟DOM（用于文本节点）
   var createEmptyVNode = function (text) {
     if (text === void 0) text = '';
 
@@ -857,14 +957,20 @@
     return node
   };
 
+  // 创建文本虚拟DOM
   function createTextVNode(val) {
     return new VNode(undefined, undefined, undefined, String(val))
   }
 
   // optimized shallow clone
+  //优化浅拷贝
   // used for static nodes and slot nodes because they may be reused across
   // multiple renders, cloning them avoids errors when DOM manipulations rely
   // on their elm reference.
+  /*
+  用于静态节点和插槽节点，因为它们可以在多个渲染中重用
+  当DOM操作依赖于它们的elm引用时，克隆它们可以避免错误
+  * */
   function cloneVNode(vnode) {
     var cloned = new VNode(
       vnode.tag,
@@ -894,11 +1000,13 @@
   /*
    * not type checking this file because flow doesn't play well with
    * dynamically accessing methods on Array prototype
+   * 不对这个文件进行类型检查，因为流在Array.prototype上不会动态表现得很好
    */
 
   var arrayProto = Array.prototype;
   var arrayMethods = Object.create(arrayProto);
 
+  // 当开发者调用了数据的下列这些方法时，先调用浏览器自带的能力，再修改DOM
   var methodsToPatch = [
     'push',
     'pop',
@@ -911,6 +1019,7 @@
 
   /**
    * Intercept mutating methods and emit events
+   * 拦截变异方法和提交事件
    */
   methodsToPatch.forEach(function (method) {
     // cache original method
