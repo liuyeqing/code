@@ -1,9 +1,20 @@
 /*!
  * Vue.js v2.6.11
- * (c) 2014-2019 Evan You
- * Released under the MIT License.
+ * (c) 2014-2019 Evan You   (c):copyright版权
+ * Released under the MIT License.  根据麻省理工学院的许可证发布。
  */
 (function (global, factory) {
+  /*
+  整个Vue.js就是一个匿名函数自调用
+  global就是this（全局变量），factory就是this右边的这个函数
+  * */
+
+  /*
+  用于判断运行环境（比如在浏览器里exports是不存在的），针对不同环境进行不同处理：
+  1.如果全局包含名为exports的对象和名为module的变量，说明支持CommonJS，就把factory()作为一个模块暴露出去。
+  2.如果包含define函数并且define.amd存在（说明支持AMD），就使用define(factory)。
+  3.否则就把Vue的构造函数挂载在全局对象上
+  * */
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
     typeof define === 'function' && define.amd ? define(factory) :
       (global = global || self, global.Vue = factory());
@@ -16,6 +27,9 @@
 
   // These helpers produce better VM code in JS engines due to their
   // explicitness and function inlining.
+  /*
+  由于它们的明确性和函数内联，这些助手可以在JS引擎中生成更好的VM代码。
+  * */
   function isUndef(v) {   //传入参数，返回一个布尔值，判断这个参数是否是undefined或null
     return v === undefined || v === null
   }
@@ -46,9 +60,8 @@
   }
 
   /**
-   * Quick object check - this is primarily used to tell
-   * Objects from primitive values when we know the value
-   * is a JSON-compliant type.
+   Quick object check - this is primarily used to tell Objects from primitive values when we know the value is a JSON-compliant type.
+   快速对象检查-当我们知道值是JSON兼容类型时，这主要用于区分对象和原始值。
    */
   function isObject(obj) {  //判断传入的参数是否是对象（并且不是null）
     return obj !== null && typeof obj === 'object'
@@ -56,6 +69,7 @@
 
   /**
    * Get the raw type string of a value, e.g., [object Object].
+   * 获取值的原始类型字符串，例如[object object]。
    */
   var _toString = Object.prototype.toString;  //Object.prototype.toString：一个表示该对象的字符串
 
@@ -64,8 +78,8 @@
   }
 
   /**
-   * Strict object type check. Only returns true
-   * for plain JavaScript objects.
+   Strict object type check. Only returns true for plain JavaScript objects.
+   严格的对象类型检查。只对纯JavaScript对象返回true。
    */
   function isPlainObject(obj) { //判断传入的参数是否是一个普通的对象（而不是函数、数组、正则表达式、日期对象）
     return _toString.call(obj) === '[object Object]'
@@ -78,6 +92,10 @@
   /**
    * Check if val is a valid array index.
    */
+  /*
+  console.log("isValidArrayIndex('0')", isValidArrayIndex('0'));  //true
+  console.log("isValidArrayIndex('7.8')", isValidArrayIndex('7.8'));  //false
+  * */
   function isValidArrayIndex(val) { //判断传入的参数是否可以作为一个数组的索引
     var n = parseFloat(String(val));
     return n >= 0 && Math.floor(n) === n && isFinite(val)
@@ -92,7 +110,11 @@
   }
 
   /**
-   * Convert a value to a string that is actually rendered.
+   Convert a value to a string that is actually rendered.
+   将值转换为实际呈现的字符串。
+   1.如果==null，说明是undefined或者null，就返回空字符串
+   2.如果【是数组】或者【是普通对象并且对象的toString是Object.prototype.toString】，返回JSON.stringify(val, null, 2)
+   3.否则返回String(val)
    */
   function toString(val) {
     return val == null
@@ -103,8 +125,7 @@
   }
 
   /**
-   * Convert an input value to a number for persistence.
-   * If the conversion fails, return original string.
+   Convert an input value to a number for persistence. If the conversion fails, return original string.
    */
   function toNumber(val) {  //传入参数，如果可以转成Number类型，就返回；否则返回原来的数据
     var n = parseFloat(val);
@@ -112,14 +133,20 @@
   }
 
   /**
-   * Make a map and return a function for checking if a key
-   * is in that map.
+   Make a map and return a function for checking if a key is in that map.
+   生成一个对象，返回一个函数来检测是否有一个key在那个对象里。
    */
+  /*
+  console.log(makeMap('a,b'));  //ƒ (val) {return map[val];}
+  console.log(makeMap('a,b')('a')); //true
+  console.log(makeMap('a,b')('b')); //true
+  console.log(makeMap('a,b')('c')); //undefined
+  */
   function makeMap(
     str,
     expectsLowerCase  //expectsLowerCase传入一个布尔值，true表示小写，false表示大写
   ) {
-    var map = Object.create(null);
+    var map = Object.create(null);  //使用Object.create(null)的一个重要应用是：创建一个纯粹的对象，以防止原型污染。
     var list = str.split(',');
     for (var i = 0; i < list.length; i++) {
       map[list[i]] = true;
@@ -170,13 +197,24 @@
   // console.log(hasOwn(object, 'age')); //false
 
   /**
-   * Create a cached version of a pure function.
+   Create a cached version of a pure function.
+   创建纯函数的缓存版本。
    */
+  /*
+  // 待缓存函数
+  function upperStr(str) {
+    return str.toUpperCase()
+  }
+  // 转换 upperStr 为缓存函数
+  var cacheUpperStr = cached(upperStr)
+  var x = cacheUpperStr('a')
+  // console.log('x', x);  //x A
+  * */
   function cached(fn) {
     var cache = Object.create(null);
     return (function cachedFn(str) {
       var hit = cache[str];
-      return hit || (cache[str] = fn(str))
+      return hit || (cache[str] = fn(str))  //如果走的是||右边，就是把fn(str)的值赋值给cache[str]，并作为函数返回值返回出去
     })
   }
 
@@ -209,15 +247,14 @@
   // console.log(hyphenate('abCd')); //ab-cd
 
   /**
-   * Simple bind polyfill for environments that do not support it,
-   * e.g., PhantomJS 1.x. Technically, we don't need this anymore
-   * since native bind is now performant enough in most browsers.
-   * But removing it would mean breaking code that was able to run in
-   * PhantomJS 1.x, so this must be kept for backward compatibility.
+   Simple bind polyfill for environments that do not support it,e.g., PhantomJS 1.x. Technically, we don't need this anymore since native bind is now performant enough in most browsers. But removing it would mean breaking code that was able to run in PhantomJS 1.x, so this must be kept for backward compatibility.
+   简单bind兼容适用于不支持它的环境，例如PhantomJS 1.x。从技术上讲，我们不再需要它了，因为原生bind在大多数浏览器中的表现已经足够了。但删除它将意味着破坏能够在PhantomJS 1.x中运行的代码，因此必须保留这一点以保持向后兼容性。
    */
-
   /* istanbul ignore next */
   function polyfillBind(fn, ctx) {
+    /*
+    ctx：context（上下文）的缩写，也就是this
+    * */
     function boundFn(a) {
       var l = arguments.length;
       return l
@@ -240,7 +277,7 @@
     : polyfillBind;
 
   /**
-   * Convert an Array-like object to a real Array.
+   Convert an Array-like object to a real Array.
    */
   function toArray(list, start) { //把一个伪数组转成真数组
     start = start || 0; //start就是从哪里开始转数组
@@ -257,7 +294,10 @@
   /**
    * Mix properties into target object.
    */
-  function extend(to, _from) {  //合并对象属性，类似于es6的Object.assign或者jQuery的$.extend
+  function extend(to, _from) {  //合并属性到目标对象里，类似于es6的Object.assign或者jQuery的$.extend
+    /*
+    遍历_from的所有属性，并把_from的所有属性拿到to里，并返回to
+    * */
     for (var key in _from) {
       to[key] = _from[key];
     }
@@ -267,9 +307,13 @@
   // console.log(result);  //{b: 2, a: 1}
 
   /**
-   * Merge an Array of Objects into a single Object.
+   Merge an Array of Objects into a single Object.
+   合并一个对象数组到一个简单的对象。
    */
   function toObject(arr) {  //把数组转成对象
+    /*
+    定义一个空对象res，遍历arr，把arr里的所有数据导入res
+    * */
     var res = {};
     for (var i = 0; i < arr.length; i++) {
       if (arr[i]) {
@@ -278,14 +322,14 @@
     }
     return res
   }
+  // console.log('toObject([11, 22])', toObject([11, 22]));  //{}，因为这个函数只适用于对象数组
   // console.log(toObject([{name : 'liuyeqing', age : 25}, {gender : 'man'}]));  //{name: "liuyeqing", age: 25, gender: "man"}
 
   /* eslint-disable no-unused-vars */
 
   /**
-   * Perform no operation.
-   * Stubbing args to make Flow happy without leaving useless transpiled code
-   * with ...rest (https://flow.org/blog/2017/05/07/Strict-Function-Call-Arity/).
+   Perform no operation. Stubbing args to make Flow happy without leaving useless transpiled code with ...rest (https://flow.org/blog/2017/05/07/Strict-Function-Call-Arity/).
+   不执行任何操作。在这里插入的参数，是为了避免 Flow 使用 rest操作符(...) 产生无用的转换代码。(https://flow.org/blog/2017/05/07/Strict-Function-Call-Arity/).
    */
   function noop(a, b, c) {
   }
@@ -307,7 +351,9 @@
   };
 
   /**
-   * Generate a string containing static keys from compiler modules.
+   Generate a string containing static keys from compiler modules.
+   从编译器模块生成一个包含静态keys的字符串。
+   这个函数的作用，我目前不是很清楚编译器模块是个什么东西…就函数本身功能而言，接收一个对象数组，然后取出其中的 staticKeys 的值(是个数组), 拼成一个keys的数组，再返回这个数组的字符串形式，用,连接的，如：'hello,wolrd,vue'
    */
   function genStaticKeys(modules) {
     return modules.reduce(function (keys, m) {
@@ -360,9 +406,8 @@
   }
 
   /**
-   * Return the first index at which a loosely equal value can be
-   * found in the array (if value is a plain object, the array must
-   * contain an object of the same shape), or -1 if it is not present.
+   Return the first index at which a loosely equal value can be found in the array (if value is a plain object, the array must contain an object of the same shape), or -1 if it is not present.
+   返回在数组中可以找到大致相等的值的第一个索引（如果值是普通对象，则数组必须包含一个形状相同的对象），如果不存在，则返回-1。
    */
   function looseIndexOf(arr, val) { //传入一个数组、一个值，判断这个值在数组里的索引，如果没有，就返回-1
     for (var i = 0; i < arr.length; i++) {
@@ -506,7 +551,7 @@
     /**
      * Check if an attribute must be bound using property, e.g. value
      * Platform-dependent.
-     * 检查是否一个熟悉必须用熟悉来绑定，比如value。依赖平台。
+     * 检查是否一个属性必须用属性来绑定，比如value。依赖平台。
      */
     mustUseProp: no,
 
@@ -528,7 +573,7 @@
 
   /**
    * unicode letters used for parsing html tags, component names and property paths.
-   * unicode自负被用来解析html标签，组件名和属性路径。
+   * unicode字符被用来解析html标签，组件名和属性路径。
    * using https://www.w3.org/TR/html53/semantics-scripting.html#potentialcustomelementname
    * skipping \u10000-\uEFFFF due to it freezing up PhantomJS
    */
@@ -544,7 +589,7 @@
   }
 
   /**
-   * Define a property. //定义一个熟悉
+   * Define a property. //定义一个属性
    * enumerable：可枚举
    */
   function def(obj, key, val, enumerable) {
@@ -613,15 +658,19 @@
     }
   }
 
-  // this needs to be lazy-evaled because vue may be required before
-  // vue-server-renderer can set VUE_ENV
+  /*
+  this needs to be lazy-evaled because vue may be required before vue-server-renderer can set VUE_ENV
+  这需要延迟计算，因为在vue-server-renderer可以设置vue_ENV之前，可能需要vue
+  * */
   var _isServer;
   var isServerRendering = function () { //判断是否是服务端渲染
     if (_isServer === undefined) {
       /* istanbul ignore if */
       if (!inBrowser && !inWeex && typeof global !== 'undefined') {
-        // detect presence of vue-server-renderer and avoid
-        // Webpack shimming the process
+        /*
+        detect presence of vue-server-renderer and avoid Webpack shimming the process
+        检测vue-server-renderer的存在并避免webpack shimming进程
+        * */
         _isServer = global['process'] && global['process'].env.VUE_ENV === 'server';
       } else {
         _isServer = false;
@@ -631,6 +680,9 @@
   };
 
   // detect devtools
+  /*
+  检测开发工具
+  * */
   var devtools = inBrowser && window.__VUE_DEVTOOLS_GLOBAL_HOOK__;
   // console.log('devtools', devtools);  //如果浏览器安装了vue开发插件，会返回一个对象，这个对象里有Vue、emit、off、on、once这些方法；如果浏览器没装vue插件，就返回undefined
 
@@ -646,6 +698,7 @@
     return typeof Ctor === 'function' && /native code/.test(Ctor.toString())
   }
 
+  //判断浏览器是否原生支持Symbol
   var hasSymbol =
     typeof Symbol !== 'undefined' && isNative(Symbol) &&
     typeof Reflect !== 'undefined' && isNative(Reflect.ownKeys);
@@ -654,6 +707,9 @@
   /* istanbul ignore if */ // $flow-disable-line
   if (typeof Set !== 'undefined' && isNative(Set)) {
     // use native Set when available.
+    /*
+    当Set可用时，使用原生的Set
+    * */
     _Set = Set;
   } else {
     // a non-standard Set polyfill that only works with primitive keys. //用原始的方法来创建一个无标准的Set兼容
@@ -873,9 +929,10 @@
     }
   };
 
-  // The current target watcher being evaluated.
-  // This is globally unique because only one watcher
-  // can be evaluated at a time.
+  /*
+  The current target watcher being evaluated. This is globally unique because only one watcher can be evaluated at a time.
+  正在评估的当前目标观察程序。这是全局唯一的，因为一次只能评估一个观察者。
+  * */
   Dep.target = null;
   var targetStack = [];
 
@@ -975,9 +1032,11 @@
     var cloned = new VNode(
       vnode.tag,
       vnode.data,
-      // #7975
-      // clone children array to avoid mutating original in case of cloning
-      // a child.
+      /*
+      #7975
+      clone children array to avoid mutating original in case of cloning a child.
+      克隆子数组以避免在克隆子级时对原始数组进行变异。
+      * */
       vnode.children && vnode.children.slice(),
       vnode.text,
       vnode.elm,
@@ -998,11 +1057,14 @@
   }
 
   /*
-   * not type checking this file because flow doesn't play well with
-   * dynamically accessing methods on Array prototype
-   * 不对这个文件进行类型检查，因为流在Array.prototype上不会动态表现得很好
+   not type checking this file because flow doesn't play well with dynamically accessing methods on Array prototype
+   没有对该文件进行类型检查，因为流不能很好地处理数组原型上的动态访问方法
    */
 
+  /*
+  问：Object.create(Array.prototype)和new Array有什么区别？
+  答：参考链接：https://stackoverflow.com/questions/22022058/new-array-vs-object-createarray-prototype
+  * */
   var arrayProto = Array.prototype;
   var arrayMethods = Object.create(arrayProto);
 
@@ -1018,33 +1080,46 @@
   ];
 
   /**
-   * Intercept mutating methods and emit events
-   * 拦截变异方法和提交事件
+   Intercept mutating methods and emit events
+   拦截变异方法和提交事件
+   数组响应化
+   数组⽐较特别，它的操作⽅法不会触发setter，需要特别处理。修改数组7个变更⽅法使其可以发送更新通知
    */
   methodsToPatch.forEach(function (method) {
-    // cache original method
-    var original = arrayProto[method];
+    // cache original method  //缓存原始方法（把原型上的方法存到一个变量里）
+    var original = arrayProto[method];  //就是：var original = Array.prototype[method];
     def(arrayMethods, method, function mutator() {
       var args = [], len = arguments.length;
       while (len--) args[len] = arguments[len];
 
+      // 执行并缓存原生数组功能
       var result = original.apply(this, args);
+
+      // 响应式处理
       var ob = this.__ob__;
       var inserted;
       switch (method) {
+        // push、unshift会新增索引，所以要手动observer
         case 'push':
         case 'unshift':
           inserted = args;
           break
+
+        // splice方法，如果传入了第三个参数，也会有索引加入，也要手动observer。
         case 'splice':
           inserted = args.slice(2);
           break
       }
+
+      // 获取插入的值，并设置响应式监听
       if (inserted) {
         ob.observeArray(inserted);
       }
-      // notify change
+
+      // notify change  通知变更
       ob.dep.notify();
+
+      // 返回原生数组方法的执行结果
       return result
     });
   });
@@ -1052,10 +1127,12 @@
   /*  */
 
   var arrayKeys = Object.getOwnPropertyNames(arrayMethods);
+  // console.log('arrayKeys', arrayKeys);  //["push", "pop", "shift", "unshift", "splice", "sort", "reverse"]
 
   /**
    * In some cases we may want to disable observation inside a component's
    * update computation.
+   * 在某些情况下，我们可能希望禁用组件更新计算中的观察。
    */
   var shouldObserve = true;
 
@@ -1064,16 +1141,23 @@
   }
 
   /**
-   * Observer class that is attached to each observed
-   * object. Once attached, the observer converts the target
-   * object's property keys into getter/setters that
-   * collect dependencies and dispatch updates.
+   Observer class that is attached to each observed object. Once attached, the observer converts the target object's property keys into getter/setters that collect dependencies and dispatch updates.
+   附加到每个被观察对象的观察者类。附加后，观察者将目标对象的属性转换为getter/setter，收集依赖项并发送更新。
    */
   var Observer = function Observer(value) {
     this.value = value;
     this.dep = new Dep();
     this.vmCount = 0;
+
+    /*
+    def是定义的函数，使用Object.defineProperty()给value添加不可枚举的属性,__ob__是一个对象被observe的标志。
+    我们在开发的过程中，有时会遇到，数据改变但视图没有更新的问题。
+    这个时候，你可以log一下，看看该对象是否有__ob__属性来判断该对象是不是被observe了，如果没有，那么数据改变后视图是不可能更新的。
+    原文链接：https://www.jianshu.com/p/1032ecd62b3a
+    * */
     def(value, '__ob__', this);
+
+    //数组特殊处理，下面详细讲解
     if (Array.isArray(value)) {
       if (hasProto) {
         protoAugment(value, arrayMethods);
@@ -1082,6 +1166,7 @@
       }
       this.observeArray(value);
     } else {
+      //对于对象，遍历对象，并用Object.defineProperty转化为getter/setter，便于监控数据的get和set
       this.walk(value);
     }
   };
@@ -1090,6 +1175,7 @@
    * Walk through all properties and convert them into
    * getter/setters. This method should only be called when
    * value type is Object.
+   遍历对象，调用defineReactive$$1将每个属性转化为getter/setter
    */
   Observer.prototype.walk = function walk(obj) {
     var keys = Object.keys(obj);
@@ -1099,7 +1185,8 @@
   };
 
   /**
-   * Observe a list of Array items.
+   Observe a list of Array items.
+   observe每个数组元素(observe会生成Observer类)
    */
   Observer.prototype.observeArray = function observeArray(items) {
     for (var i = 0, l = items.length; i < l; i++) {
@@ -1160,6 +1247,7 @@
 
   /**
    * Define a reactive property on an Object.
+   * 在对象上定义响应式属性。
    */
   function defineReactive$$1(
     obj,
@@ -1168,6 +1256,9 @@
     customSetter,
     shallow
   ) {
+    /*
+    实例化一个Dep，这个Dep存在在下面的get和set函数的作用域中，用于收集订阅数据更新的Watcher。这里一个Dep与一个属性（即参数里的key）相对应，一个Dep可以有多个订阅者。
+    * */
     var dep = new Dep();
 
     var property = Object.getOwnPropertyDescriptor(obj, key);
@@ -1178,6 +1269,13 @@
     // cater for pre-defined getter/setters
     var getter = property && property.get;
     var setter = property && property.set;
+    /*
+    比如此时参数传入的obj是{ objKey: { objValueKey1:{ objValueKey2: objValueValue2 } } },
+    key是objKey，
+    val是{ objValueKey1:{ objValueKey2: objValueValue2 } }，
+    那么这个时候{ objValueKey1:{ objValueKey2: objValueValue2 } }对象也会被observe到，在observe该对象的时候，{ objValueKey2: objValueValue2 }也会被observe到。
+    以此类推，不管对象的结构有多深都会被observe到。
+    * */
     if ((!getter || setter) && arguments.length === 2) {
       val = obj[key];
     }
@@ -1225,15 +1323,41 @@
   }
 
   /**
-   * Set a property on an object. Adds the new property and
-   * triggers change notification if the property doesn't
-   * already exist.
+   Set a property on an object. Adds the new property and triggers change notification if the property doesn't already exist.
+   设置一个属性在对象上。如果这个属性不存在时增加这个新属性，就触发改变通知
+   示例demo：
+   <div id="app">
+     <div>obj.msg:{{obj.msg}}</div>
+     <button type="button" @click="add">add</button>
+   </div>
+   <script>
+   let app = new Vue({
+    el : '#app',
+    data(){
+      return {
+        obj : {}
+      }
+    },
+    methods : {
+      add(){
+        Vue.set(this.obj, 'msg', 'a');
+      }
+    }
+   });
+   </script>
    */
   function set(target, key, val) {
+    /*
+    如果target是基本数据类型，就报错：Cannot set reactive property on undefined, null, or primitive value: " + ((target))
+    * */
     if (isUndef(target) || isPrimitive(target)
     ) {
       warn(("Cannot set reactive property on undefined, null, or primitive value: " + ((target))));
     }
+
+    /*
+    如果target是数组并且可以是一个合法的索引，就操作数组
+    * */
     if (Array.isArray(target) && isValidArrayIndex(key)) {
       target.length = Math.max(target.length, key);
       target.splice(key, 1, val);
@@ -1262,17 +1386,29 @@
 
   /**
    * Delete a property and trigger change if necessary.
+   * 删除属性并在必要时触发更改。
    */
   function del(target, key) {
+    /*
+    如果target是基本数据类型，就报错
+    * */
     if (isUndef(target) || isPrimitive(target)
     ) {
       warn(("Cannot delete reactive property on undefined, null, or primitive value: " + ((target))));
     }
+
+    /*
+    如果target是数组、并且key是合法的索引，就删除第key个元素
+    * */
     if (Array.isArray(target) && isValidArrayIndex(key)) {
       target.splice(key, 1);
       return
     }
     var ob = (target).__ob__;
+
+    /*
+    如果target._isVue为true或者(ob && ob.vmCount)为true，报错：Avoid deleting properties on a Vue instance or its root $data - just set it to null.（禁止删除Vue实例上的属性或者它的根data-只能设置它为null）
+    * */
     if (target._isVue || (ob && ob.vmCount)) {
       warn(
         'Avoid deleting properties on a Vue instance or its root $data ' +
@@ -1280,9 +1416,17 @@
       );
       return
     }
+
+    /*
+    如果key不在target上，不做处理
+    * */
     if (!hasOwn(target, key)) {
       return
     }
+
+    /*
+    走到这一步说明, target是对象, 并且key在target上, 直接使用delete删除
+    * */
     delete target[key];
     if (!ob) {
       return
@@ -1291,13 +1435,19 @@
   }
 
   /**
-   * Collect dependencies on array elements when the array is touched, since
-   * we cannot intercept array element access like property getters.
+   Collect dependencies on array elements when the array is touched, since we cannot intercept array element access like property getters.
+   在接触数组时收集对数组元素的依赖关系，因为我们不能像属性getter那样拦截数组元素访问。
    */
   function dependArray(value) {
+    /*
+    遍历value
+    * */
     for (var e = (void 0), i = 0, l = value.length; i < l; i++) {
       e = value[i];
       e && e.__ob__ && e.__ob__.dep.depend();
+      /*
+      如果数组里嵌套了数组，就递归遍历
+      * */
       if (Array.isArray(e)) {
         dependArray(e);
       }
@@ -1307,14 +1457,14 @@
   /*  */
 
   /**
-   * Option overwriting strategies are functions that handle
-   * how to merge a parent option value and a child option
-   * value into the final value.
+   Option overwriting strategies are functions that handle how to merge a parent option value and a child option value into the final value.
+   选项覆盖策略是处理如何将父option和子option合并为最终值的函数。
    */
   var strats = config.optionMergeStrategies;
 
   /**
-   * Options with restrictions
+   Options with restrictions
+   有限制的选项
    */
   {
     strats.el = strats.propsData = function (parent, child, vm, key) {
@@ -1330,6 +1480,7 @@
 
   /**
    * Helper that recursively merges two data objects together.
+   * 递归地将两个数据对象合并在一起的助手。
    */
   function mergeData(to, from) {
     if (!from) {
@@ -1337,6 +1488,11 @@
     }
     var key, toVal, fromVal;
 
+    /*
+    Reflect.ownKeys和Object.keys的区别：
+    1.Reflect.ownKeys()返回所有属性key；Object.keys()返回属性key，但不包括不可枚举的属性。
+    2.浏览器兼容性，Reflect.ownKeys()：chrome49开始支持，Object.keys：chrome5开始支持
+    * */
     var keys = hasSymbol
       ? Reflect.ownKeys(from)
       : Object.keys(from);
@@ -1371,7 +1527,7 @@
     vm
   ) {
     if (!vm) {
-      // in a Vue.extend merge, both should be functions
+      // in a Vue.extend merge, both should be functions  在一个.vue文件里合并，两者都应该是函数
       if (!childVal) {
         return parentVal
       }
@@ -1383,6 +1539,9 @@
       // merged result of both functions... no need to
       // check if parentVal is a function here because
       // it has to be a function to pass previous merges.
+      /*
+      当parentVal和childVal目前都存在，我们需要去返回一个函数（这个函数返回合并后的结果），在这里不需要检测parentVal是否是一个函数因为它一定是一个函数才会通过之前的合并
+      * */
       return function mergedDataFn() {
         return mergeData(
           typeof childVal === 'function' ? childVal.call(this, this) : childVal,
@@ -1431,6 +1590,7 @@
 
   /**
    * Hooks and props are merged as arrays.
+   * 钩子函数和props被合并作为数组
    */
   function mergeHook(
     parentVal,
@@ -1448,6 +1608,9 @@
       : res
   }
 
+  /*
+  dedupeHooks：数组去重，传入一个数组，返回一个去重后的数组
+  * */
   function dedupeHooks(hooks) {
     var res = [];
     for (var i = 0; i < hooks.length; i++) {
@@ -1458,6 +1621,9 @@
     return res
   }
 
+  /*
+  对生命周期钩子选项的合并都执行mergeHook策略
+  * */
   LIFECYCLE_HOOKS.forEach(function (hook) {
     strats[hook] = mergeHook;
   });
@@ -1465,9 +1631,9 @@
   /**
    * Assets
    *
-   * When a vm is present (instance creation), we need to do
-   * a three-way merge between constructor options, instance
-   * options and parent options.
+   When a vm is present (instance creation), we need to do a three-way merge between constructor options, instance options and parent options.
+   当一个vm存在时（实例创建），我们需要在构造函数选项、实例选项和父选项之间进行三方合并。
+   首先是以parentVal为原型创建对象 res, 然后判断是否存在childVal, 如果有的话调用extend()把childVal合并到res上，没有就直接返回res。
    */
   function mergeAssets(
     parentVal,
@@ -1484,15 +1650,18 @@
     }
   }
 
+  /*
+  初始化资产函数
+  * */
   ASSET_TYPES.forEach(function (type) {
     strats[type + 's'] = mergeAssets;
   });
 
   /**
-   * Watchers.
+   Watchers.
    *
-   * Watchers hashes should not overwrite one
-   * another, so we merge them as arrays.
+   Watchers hashes should not overwrite one another, so we merge them as arrays.
+   观察者hash不应该互相覆盖，所以我们将它们合并为数组。
    */
   strats.watch = function (
     parentVal,
@@ -1561,7 +1730,11 @@
 
   /**
    * Default strategy.
+   * 默认策略。
    */
+  /*
+  如果childVal是undefined，就返回parentVal；否则返回childVal
+  * */
   var defaultStrat = function (parentVal, childVal) {
     return childVal === undefined
       ? parentVal
@@ -1570,6 +1743,7 @@
 
   /**
    * Validate component names
+   * 验证组件名
    */
   function checkComponents(options) {
     for (var key in options.components) {
@@ -1578,13 +1752,22 @@
   }
 
   function validateComponentName(name) {
+    /*
+    对传入的name进行正则表达式测试，如果是false，报错的意思为：无效的组件名称：“”。组件名称应符合html5规范中的有效自定义元素名称
+    * */
     if (!new RegExp(("^[a-zA-Z][\\-\\.0-9_" + (unicodeRegExp.source) + "]*$")).test(name)) {
       warn(
         'Invalid component name: "' + name + '". Component names ' +
         'should conform to valid custom element name in html5 specification.'
       );
     }
-    if (isBuiltInTag(name) || config.isReservedTag(name)) { //如果组件名用的是内建标签名，就提示用户
+    if (isBuiltInTag(name) || config.isReservedTag(name)) {
+      /*
+      如果组件名用的是内建标签名，就提示用户，比如下面这段代码会报错（[Vue warn]: Do not use built-in or reserved HTML elements as component id: a）：
+      Vue.component('a', {
+        template : '我是自定义组件'
+      });
+      * */
       warn(
         'Do not use built-in or reserved HTML elements as component ' +
         'id: ' + name
@@ -1593,8 +1776,9 @@
   }
 
   /**
-   * Ensure all props option syntax are normalized into the
-   * Object-based format.
+   Ensure all props option syntax are normalized into the Object-based format.
+   确保所有props选项语法规范化为基于对象的格式。
+   参考链接：https://www.cnblogs.com/heavenYJJ/p/10242084.html
    */
   function normalizeProps(options, vm) {
     var props = options.props;
@@ -1603,6 +1787,11 @@
     }
     var res = {};
     var i, val, name;
+    /*
+    如果props是数组，就遍历数组，
+    1.数组元素如果都是字符串，先让这个字符串改为驼峰命名法，再让这个字符串成为一个属性名，属性值是一个对象（这个对象是{type : null}）
+    2.如果数组元素里其中一个不是字符串，就报错：props must be strings when using array syntax.
+    * */
     if (Array.isArray(props)) {
       i = props.length;
       while (i--) {
@@ -1615,6 +1804,11 @@
         }
       }
     } else if (isPlainObject(props)) {
+      /*
+      如果props是一个普通对象，就遍历props的属性，把属性名改成驼峰命名法，然后：
+      1.如果属性值是普通对象，就让属性值原封不动地赋值给res[name]
+      2.否则让属性值变成{type : val}（外面嵌套了一个对象）
+      * */
       for (var key in props) {
         val = props[key];
         name = camelize(key);
@@ -1623,23 +1817,58 @@
           : {type: val};
       }
     } else {
+      /*
+      如果props既不是数组、也不是普通对象，就报错
+      * */
       warn(
         "Invalid value for option \"props\": expected an Array or an Object, " +
         "but got " + (toRawType(props)) + ".",
         vm
       );
     }
+
+    /*
+    在函数外面调用下面这段代码：
+    {
+      let arr = ['name', 'age'];
+      normalizeProps({props : arr});
+      let obj = {
+        name : {
+          type : String
+        },
+        age : {
+          type : Number
+        }
+      };
+      normalizeProps({props : obj});
+    }
+    normalizeProps({props : arr});在这里打印：{"age":{"type":null},"name":{"type":null}}
+    normalizeProps({props : obj});在这里打印：{"age":{"type":Number},"name":{"type":String}}
+    * */
+    // console.log('res', res);
     options.props = res;
   }
 
   /**
-   * Normalize all injections into Object-based format
+   Normalize all injections into Object-based format
+   将所有注入规范化为基于对象的格式
+   这个函数是provide/inject的源码
+   参考链接：https://blog.csdn.net/qq_25324335/article/details/88312316
    */
   function normalizeInject(options, vm) {
+    /*
+    先缓存下这个 inject 对象
+    * */
     var inject = options.inject;
     if (!inject) {
       return
     }
+
+    /*
+    再将这个 inject 对象置空，并且赋值给 normalized 变量
+    这样做的好处是，此时 normalized 和 options.inject 都指向同一个对象，
+    下面对 normalized 的操作实际上就是对 options.inject 的操作了
+    * */
     var normalized = options.inject = {};
     if (Array.isArray(inject)) {
       for (var i = 0; i < inject.length; i++) {
@@ -1659,10 +1888,22 @@
         vm
       );
     }
+
+    /*
+    函数外面调用这段代码：
+    {
+      let arr = ['name', 'age'];
+      normalizeInject({inject : arr});  //{age : {from : 'age'}, {name : {from : 'name'}}}
+      let obj = {name : String};
+      normalizeInject({inject : obj});  //{name : {from : String}}
+    }
+    * */
+    // console.log('normalized', normalized);
   }
 
   /**
-   * Normalize raw function directives into object format.
+   Normalize raw function directives into object format.
+   将原始函数指令格式化为对象格式。
    */
   function normalizeDirectives(options) {
     var dirs = options.directives;
@@ -1674,6 +1915,13 @@
         }
       }
     }
+    /*
+    let lower = function (el) {
+      el.innerHTML = el.innerHTML.toLowerCase();
+    }
+    normalizeDirectives({directives : {lower}});
+    console.log('dirs', dirs);  //{lower : {bind : f,update : f}}
+    * */
   }
 
   function assertObjectType(name, value, vm) {
@@ -1687,8 +1935,8 @@
   }
 
   /**
-   * Merge two option objects into a new one.
-   * Core utility used in both instantiation and inheritance.
+   Merge two option objects into a new one. Core utility used in both instantiation and inheritance.
+   将两个选项对象合并为一个新对象。用于实例化和继承的核心实用程序。
    */
   function mergeOptions(
     parent,
@@ -1707,10 +1955,11 @@
     normalizeInject(child, vm);
     normalizeDirectives(child);
 
-    // Apply extends and mixins on the child options,
-    // but only if it is a raw options object that isn't
-    // the result of another mergeOptions call.
-    // Only merged options has the _base property.
+
+    /*
+    Apply extends and mixins on the child options,but only if it is a raw options object that isn't the result of another mergeOptions call. Only merged options has the _base property.
+    在子选项上应用extends和mixin，但仅当它是一个raw options对象而不是另一个mergeOptions调用的结果时。只有合并的选项具有_base属性。
+    * */
     if (!child._base) {
       if (child.extends) {
         parent = mergeOptions(parent, child.extends, vm);
@@ -1743,6 +1992,7 @@
    * Resolve an asset.
    * This function is used because child instances need access
    * to assets defined in its ancestor chain.
+   * 解析一个静态资源。这个函数被使用是因为子实例需要访问被定义的静态资源在它的原型链里
    */
   function resolveAsset(
     options,
@@ -1781,6 +2031,9 @@
   /*  */
 
 
+  /*
+  验证prop
+  * */
   function validateProp(
     key,
     propOptions,
@@ -1821,7 +2074,8 @@
   }
 
   /**
-   * Get the default value of a prop.
+   Get the default value of a prop.
+   获取prop的默认值
    */
   function getPropDefaultValue(vm, prop, key) {
     // no default, return undefined
@@ -1840,6 +2094,9 @@
     }
     // the raw prop value was also undefined from previous render,
     // return previous default value to avoid unnecessary watcher trigger
+    /*
+    原始属性值也未从以前的渲染中定义，请返回以前的默认值以避免不必要的观察者触发
+    * */
     if (vm && vm.$options.propsData &&
       vm.$options.propsData[key] === undefined &&
       vm._props[key] !== undefined
@@ -1855,6 +2112,7 @@
 
   /**
    * Assert whether a prop is valid.
+   * 判断一个prop是否合法
    */
   function assertProp(
     prop,
@@ -1863,6 +2121,24 @@
     vm,
     absent
   ) {
+    /*
+    如果配置了required为true、但是没有设置这个属性，就会提示下面这段信息，示例如下：
+    <com></com>
+    Vue.component('com', {
+      template : `<div>我是自定义组件</div>`,
+      props : {
+        age : {
+          required : true,
+        }
+      },
+    });
+    console.log('prop', prop);  //{required: true}
+    console.log('name', name);  //age
+    console.log('value', value);  //undefined
+    console.log('vm', vm);  //{}
+    console.log('absent', absent);  //true
+    提示如下：[Vue warn]: Missing required prop: "age"
+    * */
     if (prop.required && absent) {
       warn(
         'Missing required prop: "' + name + '"',
@@ -1870,10 +2146,14 @@
       );
       return
     }
+
+    /*
+    如果没写value，并且prop.required是false，就返回不处理
+    * */
     if (value == null && !prop.required) {
       return
     }
-    var type = prop.type;
+    var type = prop.type; //获取prop的数据类型
     var valid = !type || type === true;
     var expectedTypes = [];
     if (type) {
@@ -1934,17 +2214,26 @@
    * Use function string name to check built-in types,
    * because a simple equality check will fail when running
    * across different vms / iframes.
+   * 使用函数字符串名称检查内置类型，因为在不同的vm/iframe上运行时，简单的相等性检查将失败。
    */
   function getType(fn) {
     var match = fn && fn.toString().match(/^\s*function (\w+)/);
     return match ? match[1] : ''
   }
 
+  /*
+  判断传入的两个参数是否相等
+  * */
   function isSameType(a, b) {
     return getType(a) === getType(b)
   }
 
   function getTypeIndex(type, expectedTypes) {
+    /*
+    1.如果expectedTypes不是数组，判断expectedTypes和type是否是同一种数据类型，如果是返回0，否则返回-1
+    2.如果expectedTypes有length属性，遍历expectedTypes，如果expectedTypes的第i个元素和type是同一种数据类型，返回i；
+    3.否则返回-1
+    * */
     if (!Array.isArray(expectedTypes)) {
       return isSameType(expectedTypes, type) ? 0 : -1
     }
@@ -1978,15 +2267,28 @@
   }
 
   function styleValue(value, type) {
+    /*
+    如果type是String，返回原数据
+    * */
     if (type === 'String') {
       return ("\"" + value + "\"")
     } else if (type === 'Number') {
+      /*
+      如果type是Number，把数据转成字符串，再返回
+      * */
       return ("" + (Number(value)))
     } else {
+      /*
+      如果type既不是String、也不是Number，就把原数据转成String，再返回
+      * */
       return ("" + value)
     }
   }
 
+  /*
+  console.log(isExplicable('a')); //false
+  console.log(isExplicable('string')); //true
+  * */
   function isExplicable(value) {
     var explicitTypes = ['string', 'number', 'boolean'];
     return explicitTypes.some(function (elem) {
@@ -1994,6 +2296,9 @@
     })
   }
 
+  /*
+  console.log('isBoolean()', isBoolean());  //false
+  * */
   function isBoolean() {
     var args = [], len = arguments.length;
     while (len--) args[len] = arguments[len];
@@ -2006,6 +2311,11 @@
   /*  */
 
   function handleError(err, vm, info) {
+    /*
+    error：错误对象
+    vm：发生错误的Vue组件实例
+    info：是 Vue 特定的错误信息，比如错误所在的生命周期钩子
+    * */
     // Deactivate deps tracking while processing error handler to avoid possible infinite rendering.
     // See: https://github.com/vuejs/vuex/issues/1505
     pushTarget();
@@ -2034,6 +2344,9 @@
     }
   }
 
+  /*
+  调用错误处理
+  * */
   function invokeWithErrorHandling(
     handler,
     context,
@@ -2112,6 +2425,9 @@
   // where microtasks have too high a priority and fire in between supposedly
   // sequential events (e.g. #4521, #6690, which have workarounds)
   // or even between bubbling of the same event (#6566).
+  /*
+  这里我们有使用微任务的异步延迟包装器。在2.5中，我们使用了（宏）任务（与微任务相结合）。然而，当状态在重新绘制之前被更改时，它会有一些微妙的问题.（例如：#6813，out-in transitions）。另外，在事件处理程序中使用（宏）任务会导致一些无法避免的奇怪行为.(例如 #7109, #7153, #7546, #7834, #8109).所以我们现在再次在任何地方都使用微任务。这种折衷的一个主要缺点是，在某些情况下，微任务的优先级太高，并且在假定的顺序事件（例如#4521，#6690，它们有解决方法）之间，或者甚至在同一事件的冒泡之间（#6566）。
+  * */
   var timerFunc;
 
   // The nextTick behavior leverages the microtask queue, which can be accessed
@@ -2253,6 +2569,7 @@
       );
     };
 
+    // 判断浏览器是否原生支持Proxy
     var hasProxy =
       typeof Proxy !== 'undefined' && isNative(Proxy);
 
@@ -2317,13 +2634,16 @@
   }
 
   /*  */
-
+  /*
+  创建一个Set实例
+  * */
   var seenObjects = new _Set();
 
   /**
    * Recursively traverse an object to evoke all converted
    * getters, so that every nested property inside the object
    * is collected as a "deep" dependency.
+   * 递归地遍历一个对象以调用所有已转换的getter，因此对象中的每个嵌套属性都作为“深层”依赖项收集。
    */
   function traverse(val) {
     _traverse(val, seenObjects);
@@ -3033,8 +3353,10 @@
   }
 
   /**
-   * Runtime helper for v-once.
-   * Effectively it means marking the node as static with a unique key.
+   Runtime helper for v-once.
+   Effectively it means marking the node as static with a unique key.
+   v-once的运行时帮助程序。
+   实际上，这意味着用唯一的键将节点标记为静态的。
    */
   function markOnce(
     tree,
@@ -5309,6 +5631,11 @@
     return modified
   }
 
+  /*
+  要求必须用new来调用Vue，不能直接调用Vue，示例代码如下：
+  Vue({});
+  上面这段代码就会报错：[Vue warn]: Vue is a constructor and should be called with the `new` keyword
+  * */
   function Vue(options) {
     if (!(this instanceof Vue)
     ) {
