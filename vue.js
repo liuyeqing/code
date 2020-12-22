@@ -28,7 +28,7 @@
   // These helpers produce better VM code in JS engines due to their
   // explicitness and function inlining.
   /*
-  由于它们的明确性和函数内联，这些助手可以在JS引擎中生成更好的VM代码。
+  由于它们的明确性和函数内联，这些助手可以在JS引擎中生成更好的VM代码。(代码明确，浏览器就不需要猜测你这行代码是什么意思，自然执行速度更快了)
   * */
   function isUndef(v) {   //传入参数，返回一个布尔值，判断这个参数是否是undefined或null
     return v === undefined || v === null
@@ -85,7 +85,7 @@
     return _toString.call(obj) === '[object Object]'
   }
 
-  function isRegExp(v) {  //判断传入的参数是不是正则表达式
+  function isRegExp(v) {  //判断传入的参数是不是正则表达式，以后的应用场景：如果是正则表达式，就走这段代码，否则走那段代码，参考isUnknownElement$$1这个函数
     return _toString.call(v) === '[object RegExp]'
   }
 
@@ -96,12 +96,12 @@
   console.log("isValidArrayIndex('0')", isValidArrayIndex('0'));  //true
   console.log("isValidArrayIndex('7.8')", isValidArrayIndex('7.8'));  //false
   * */
-  function isValidArrayIndex(val) { //判断传入的参数是否可以作为一个数组的索引
+  function isValidArrayIndex(val) { //判断传入的参数是否可以作为一个数组的索引（非负整数）
     var n = parseFloat(String(val));
     return n >= 0 && Math.floor(n) === n && isFinite(val)
   }
 
-  function isPromise(val) {   //判断传入的参数是否是promise，这个判断并不严格，因为只要一个对象同时有then方法和catch方法，都能返回true，比如isPromise({then(){},catch(){}})，返回true，但isPromise传入的参数其实并不是promise
+  function isPromise(val) {   //判断传入的参数是否是promise，这个判断并不严格，因为只要一个对象同时有then方法和catch方法，都能返回true，比如isPromise({then(){},catch(){}})，返回true，但isPromise传入的参数其实并不是promise，可以参考https://www.itranslater.com/qa/details/2113726593318257664
     return (
       isDef(val) &&
       typeof val.then === 'function' &&
@@ -127,7 +127,7 @@
   /**
    Convert an input value to a number for persistence. If the conversion fails, return original string.
    */
-  function toNumber(val) {  //传入参数，如果可以转成Number类型，就返回；否则返回原来的数据
+  function toNumber(val) {  //传入参数，如果可以转成Number类型，就返回；否则返回原来的数据，应用场景：如果input的type值是number，就需要把输入框的值转成number类型了
     var n = parseFloat(val);
     return isNaN(n) ? val : n
   }
@@ -141,7 +141,12 @@
   console.log(makeMap('a,b')('a')); //true
   console.log(makeMap('a,b')('b')); //true
   console.log(makeMap('a,b')('c')); //undefined
+  console.log(makeMap('A,b')('A')); //true
+  console.log(makeMap('A,b')('a')); //undefined
+  console.log(makeMap('A,b', true)('a')); //undefined
+  console.log(makeMap('A,b', true)('A')); //undefined
   */
+
   function makeMap(
     str,
     expectsLowerCase  //expectsLowerCase传入一个布尔值，true表示小写，false表示大写
@@ -189,7 +194,7 @@
    * Check whether an object has the property.
    */
   var hasOwnProperty = Object.prototype.hasOwnProperty;
-  function hasOwn(obj, key) {
+  function hasOwn(obj, key) {   //传入一个对象、key，返回该key是否在这个对象里
     return hasOwnProperty.call(obj, key)
   }
   // let object = {name : 'a'};
@@ -268,11 +273,11 @@
     return boundFn
   }
 
-  function nativeBind(fn, ctx) {  //传入两个参数（函数和this）
+  function nativeBind(fn, ctx) {  //传入两个参数（函数和this），绑定函数的this
     return fn.bind(ctx)
   }
 
-  var bind = Function.prototype.bind  //下面这段代码，是因为只有es5里有bind，apply和call是es3的
+  var bind = Function.prototype.bind  //下面这段代码，是因为只有es5里有bind，apply和call是es3的，如果浏览器自带bind，就用浏览器自己的bind；否则就使用用于兼容bind的polyfillBind
     ? nativeBind
     : polyfillBind;
 
