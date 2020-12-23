@@ -288,7 +288,7 @@
     start = start || 0; //start就是从哪里开始转数组
     var i = list.length - start;  //i就是截取的数组长度
     var ret = new Array(i); //定义一个长度为i的空数组，并把这个空数组给ret
-    while (i--) { //遍历数组，一个个地给数组增加值
+    while (i--) { //遍历数组，给数组增加项
       ret[i] = list[i + start];
     }
     return ret
@@ -369,6 +369,7 @@
   /**
    * Check if two values are loosely equal - that is,
    * if they are plain objects, do they have the same shape?
+   * 检查两个值是否松散地相等-也就是说，如果他们是普通的对象，他们是否长得一样？
    */
   function looseEqual(a, b) {
     /*
@@ -629,7 +630,7 @@
   /*  */
 
   // can we use __proto__?
-  var hasProto = '__proto__' in {};
+  var hasProto = '__proto__' in {}; //ie11:true,ie10:false
 
   // Browser environment sniffing //检测浏览器环境
   var inBrowser = typeof window !== 'undefined';  //如果有window，说明在浏览器里；否则说明在node或者其他环境里
@@ -832,7 +833,7 @@
     };
 
     /*
-    对字符串进行重复
+    对字符串进行重复，类似于es6的repeat
     console.log(repeat('abc', 2));  //abcabc
     * */
     var repeat = function (str, n) {
@@ -1361,7 +1362,7 @@
     }
 
     /*
-    如果target是数组并且可以是一个合法的索引，就操作数组
+    如果target是数组并且key可以是一个合法的索引，就操作数组
     * */
     if (Array.isArray(target) && isValidArrayIndex(key)) {
       target.length = Math.max(target.length, key);
@@ -1718,7 +1719,7 @@
           vm,
           key
         ) {
-          if (childVal && "development" !== 'production') {
+          if (childVal && "development" !== 'production') { //关于为什么会出现’"development" !== 'production'‘这种代码，是因为这个文件是编译后的代码，源码是：process.env.NODE_ENV !== 'production'
             assertObjectType(key, childVal, vm);
           }
           if (!parentVal) {
@@ -2153,7 +2154,7 @@
     }
 
     /*
-    如果没写value，并且prop.required是false，就返回不处理
+    如果value == null，并且prop.required是false，就返回不处理
     * */
     if (value == null && !prop.required) {
       return
@@ -2293,8 +2294,11 @@
   /*
   console.log(isExplicable('a')); //false
   console.log(isExplicable('string')); //true
+  console.log(isExplicable('number')); //true
+  console.log(isExplicable('boolean')); //true
+  console.log(isExplicable('b')); //false
   * */
-  function isExplicable(value) {
+  function isExplicable(value) {  //判断传入的参数是不是'string'/'number'/'boolean'的其中一种
     var explicitTypes = ['string', 'number', 'boolean'];
     return explicitTypes.some(function (elem) {
       return value.toLowerCase() === elem;
@@ -2303,8 +2307,11 @@
 
   /*
   console.log('isBoolean()', isBoolean());  //false
+  console.log(isBoolean('boolean'));  //true
+  console.log(isBoolean('boolean', 'a'));  //true
+  console.log(isBoolean('b'));  //false
   * */
-  function isBoolean() {
+  function isBoolean() {  //判断传入的参数是否包含'boolean'
     var args = [], len = arguments.length;
     while (len--) args[len] = arguments[len];
 
